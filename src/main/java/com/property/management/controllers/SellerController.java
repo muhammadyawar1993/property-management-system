@@ -36,38 +36,38 @@ public class SellerController {
     public ResponseEntity<?> addHouse(@Valid @RequestBody HouseRequest houseRequest) {
         Long id = 0L;
         if (ObjectUtils.isEmpty(houseRequest)) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Request Body is Empty"));
+            return ResponseEntity.ok().body(new MessageResponse("Error: Request Body is Empty"));
         }
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof UserDetails) {
             id = ((UserDetailsImpl) (principal)).getId();
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: User is not Logged In!"));
+            return ResponseEntity.ok().body(new MessageResponse("Error: User is not Logged In!"));
         }
         House house = sellerMapper.requestToModel(houseRequest);
         house = sellerMapper.setSellerId(house, id);
         house = houseRepository.save(house);
-        return ResponseEntity.badRequest().body(house);
+        return ResponseEntity.ok().body(house);
     }
 
     @GetMapping("/view")
     public ResponseEntity<?> viewHouse(@Valid @RequestParam(required = false) String id) {
         Long loggedInId = 0L;
         if (!StringUtils.hasLength(id)) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Request param is Empty"));
+            return ResponseEntity.ok().body(new MessageResponse("Error: Request param is Empty"));
         }
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof UserDetails) {
             loggedInId = ((UserDetailsImpl) (principal)).getId();
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: User is not Logged In!"));
+            return ResponseEntity.ok().body(new MessageResponse("Error: User is not Logged In!"));
         }
         Optional<House> house = houseRepository.findById(Long.valueOf(id));
 
         if(house.isPresent()) {
-            return ResponseEntity.badRequest().body(house.get());
+            return ResponseEntity.ok().body(house.get());
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Property not found!"));
+            return ResponseEntity.ok().body(new MessageResponse("Error: Property not found!"));
         }
     }
 
@@ -75,21 +75,21 @@ public class SellerController {
     public ResponseEntity<?> deleteHouse(@Valid @RequestParam(required = false) String id) {
         Long loggedInId = 0L;
         if (!StringUtils.hasLength(id)) {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Request param is Empty"));
+            return ResponseEntity.ok().body(new MessageResponse("Error: Request param is Empty"));
         }
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         if (principal instanceof UserDetails) {
             loggedInId = ((UserDetailsImpl) (principal)).getId();
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: User is not Logged In!"));
+            return ResponseEntity.ok().body(new MessageResponse("Error: User is not Logged In!"));
         }
         Optional<House> house = houseRepository.findById(Long.valueOf(id));
 
         if(house.isPresent()) {
             houseRepository.delete(house.get());
-            return ResponseEntity.badRequest().body(new MessageResponse("Property Deleted Successfully!"));
+            return ResponseEntity.ok().body(new MessageResponse("Property Deleted Successfully!"));
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Property not found!"));
+            return ResponseEntity.ok().body(new MessageResponse("Error: Property not found!"));
         }
     }
 
@@ -100,16 +100,49 @@ public class SellerController {
         if (principal instanceof UserDetails) {
             loggedInId = ((UserDetailsImpl) (principal)).getId();
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: User is not Logged In!"));
+            return ResponseEntity.ok().body(new MessageResponse("Error: User is not Logged In!"));
         }
         List<House> house = houseRepository.findBySellerId(loggedInId);
 
         if(!house.isEmpty()) {
-            return ResponseEntity.badRequest().body(house);
+            return ResponseEntity.ok().body(house);
         } else {
-            return ResponseEntity.badRequest().body(new MessageResponse("Error: Properties not found for this seller!"));
+            return ResponseEntity.ok().body(new MessageResponse("Error: Properties not found for this seller!"));
         }
     }
 
+    @GetMapping("/filter")
+    public ResponseEntity<?> filterProperties(
+            @RequestParam(value = "minPrice", required = false) String minPrice,
+            @RequestParam(value = "maxPrice", required = false) String maxPrice,
+            @RequestParam(value = "type", required = false) String type) {
 
+        Long loggedInId = 0L;
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            loggedInId = ((UserDetailsImpl) (principal)).getId();
+        } else {
+            return ResponseEntity.ok().body(new MessageResponse("Error: User is not Logged In!"));
+        }
+
+        List<House> houses;
+        if (type != null && minPrice != null && maxPrice != null) {
+            houses = houseRepository.findByPriceBetweenAndTypeAndSellerId(minPrice, maxPrice, type, loggedInId);
+        } else if (type != null && minPrice != null) {
+            houses = houseRepository.findByTypeAndMinPriceAndSellerId(type, minPrice, loggedInId);
+        } else if (type != null && maxPrice != null) {
+            houses = houseRepository.findByTypeAndMaxPriceAndSellerId(type, maxPrice, loggedInId);
+        } else if (type != null) {
+            houses = houseRepository.findByTypeAndSellerId(type, loggedInId);
+        } else if (minPrice != null && maxPrice != null) {
+            houses = houseRepository.findByPriceBetweenAndSellerId(minPrice, maxPrice, loggedInId);
+        } else if (minPrice != null) {
+            houses = houseRepository.findByMinPriceAndSellerId(minPrice, loggedInId);
+        } else if (maxPrice != null) {
+            houses = houseRepository.findByMaxPriceAndSellerId(maxPrice, loggedInId);
+        } else {
+            houses = houseRepository.findBySellerId(loggedInId);
+        }
+        return ResponseEntity.ok().body(houses);
+    }
 }
