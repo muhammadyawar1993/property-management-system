@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface HouseRepository extends JpaRepository<House, Long> {
     List<House> findBySellerId(Long id);
@@ -33,4 +34,9 @@ public interface HouseRepository extends JpaRepository<House, Long> {
                                           @Param("sellerId") Long id);
 
     List<House> findByTypeAndSellerId(String type, Long id);
+
+    @Query("SELECT p FROM House p WHERE p.houseId = :id AND p.sellerId = :sellerId")
+    Optional<House> findByIdAndSellerId(@Param("id") Long id,
+                                        @Param("sellerId") Long sellerId);
+
 }

@@ -111,6 +111,29 @@ public class SellerController {
         }
     }
 
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateHouse(
+            @PathVariable Long id,
+            @RequestBody HouseRequest houseRequest) {
+
+        Long loggedInId = 0L;
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            loggedInId = ((UserDetailsImpl) (principal)).getId();
+        } else {
+            return ResponseEntity.ok().body(new MessageResponse("Error: User is not Logged In!"));
+        }
+        // Retrieve the existing house from the database
+        Optional<House> optionalHouse = houseRepository.findByIdAndSellerId(id, loggedInId);
+        if (!optionalHouse.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+        House existingHouse = optionalHouse.get();
+        sellerMapper.updateHouseFromDTO(existingHouse, houseRequest);
+        House savedHouse = houseRepository.save(existingHouse);
+        return ResponseEntity.ok(savedHouse);
+    }
+
     @GetMapping("/filter")
     public ResponseEntity<?> filterProperties(
             @RequestParam(value = "minPrice", required = false) String minPrice,
