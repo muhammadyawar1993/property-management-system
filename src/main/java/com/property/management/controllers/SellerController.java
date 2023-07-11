@@ -149,19 +149,19 @@ public class SellerController {
         }
 
         List<House> houses;
-        if (type != null && minPrice != null && maxPrice != null) {
+        if (StringUtils.hasLength(type) && StringUtils.hasLength(minPrice) && StringUtils.hasLength(maxPrice)) {
             houses = houseRepository.findByPriceBetweenAndTypeAndSellerId(minPrice, maxPrice, type, loggedInId);
-        } else if (type != null && minPrice != null) {
+        } else if (StringUtils.hasLength((type)) && StringUtils.hasLength(minPrice)) {
             houses = houseRepository.findByTypeAndMinPriceAndSellerId(type, minPrice, loggedInId);
-        } else if (type != null && maxPrice != null) {
+        } else if (StringUtils.hasLength((type)) && StringUtils.hasLength(maxPrice)) {
             houses = houseRepository.findByTypeAndMaxPriceAndSellerId(type, maxPrice, loggedInId);
-        } else if (type != null) {
+        } else if (StringUtils.hasLength((type))) {
             houses = houseRepository.findByTypeAndSellerId(type, loggedInId);
-        } else if (minPrice != null && maxPrice != null) {
+        } else if (StringUtils.hasLength((minPrice)) && StringUtils.hasLength(maxPrice)) {
             houses = houseRepository.findByPriceBetweenAndSellerId(minPrice, maxPrice, loggedInId);
-        } else if (minPrice != null) {
+        } else if (StringUtils.hasLength(minPrice)) {
             houses = houseRepository.findByMinPriceAndSellerId(minPrice, loggedInId);
-        } else if (maxPrice != null) {
+        } else if (StringUtils.hasLength(maxPrice)) {
             houses = houseRepository.findByMaxPriceAndSellerId(maxPrice, loggedInId);
         } else {
             houses = houseRepository.findBySellerId(loggedInId);
