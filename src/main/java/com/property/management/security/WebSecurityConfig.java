@@ -105,7 +105,7 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
+        configuration.setAllowedOriginPatterns(Collections.singletonList("http://localhost:4200"));
         //or any domain that you want to restrict to
         configuration.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
