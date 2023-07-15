@@ -1,7 +1,10 @@
 package com.property.management.payload.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserInfoResponse {
     private Long id;
     private String username;
@@ -9,6 +12,13 @@ public class UserInfoResponse {
     private List<String> roles;
     private String token;
     private String phoneNumber;
+
+    public UserInfoResponse(String username, String email, String phoneNumber, List<String> roles) {
+        this.username = username;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.roles = roles;
+    }
 
     public UserInfoResponse(Long id, String username, String email, List<String> roles, String token, String phoneNumber) {
         this.id = id;

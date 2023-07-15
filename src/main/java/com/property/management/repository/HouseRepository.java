@@ -39,4 +39,27 @@ public interface HouseRepository extends JpaRepository<House, Long> {
     Optional<House> findByIdAndSellerId(@Param("id") Long id,
                                         @Param("sellerId") Long sellerId);
 
+    List<House> findByPriceBetweenAndType(String minPrice, String maxPrice, String type);
+
+    List<House> findByPriceBetween(String minPrice, String maxPrice);
+
+    @Query("SELECT p FROM House p WHERE p.type = :type AND p.price >= :minPrice")
+    List<House> findByTypeAndMinPrice(@Param("type") String type,
+                                                 @Param("minPrice") String minPrice);
+
+    @Query("SELECT p FROM House p WHERE p.type = :type AND p.price <= :maxPrice")
+    List<House> findByTypeAndMaxPrice(@Param("type") String type,
+                                                 @Param("maxPrice") String maxPrice);
+
+    @Query("SELECT p FROM House p WHERE p.price >= :minPrice")
+    List<House> findByMinPrice(@Param("minPrice") String minPrice);
+
+    @Query("SELECT p FROM House p WHERE p.price <= :maxPrice")
+    List<House> findByMaxPrice(@Param("maxPrice") String minPrice);
+
+    List<House> findByType(String type);
+
+    @Query("SELECT p FROM House p WHERE p.houseId = :id")
+    Optional<House> findById(@Param("id") Long id);
+
 }
