@@ -9,6 +9,7 @@ import com.property.management.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.ObjectUtils;
@@ -21,6 +22,7 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600, allowCredentials = "true")
 @RestController
 @RequestMapping("/api/seller")
+@PreAuthorize("hasRole('ROLE_SELLER') or hasRole('ROLE_AGENT')")
 public class SellerController {
 
     @Autowired
@@ -61,7 +63,7 @@ public class SellerController {
         }
         Optional<House> house = houseRepository.findById(Long.valueOf(id));
 
-        if(house.isPresent()) {
+        if (house.isPresent()) {
             return ResponseEntity.ok().body(house.get());
         } else {
             return ResponseEntity.ok().body(new MessageResponse("Error: Property not found!"));
@@ -82,7 +84,7 @@ public class SellerController {
         }
         Optional<House> house = houseRepository.findById(Long.valueOf(id));
 
-        if(house.isPresent()) {
+        if (house.isPresent()) {
             houseRepository.delete(house.get());
             return ResponseEntity.ok().body(new MessageResponse("Property Deleted Successfully!"));
         } else {
@@ -101,7 +103,7 @@ public class SellerController {
         }
         List<House> house = houseRepository.findBySellerId(loggedInId);
 
-        if(!house.isEmpty()) {
+        if (!house.isEmpty()) {
             return ResponseEntity.ok().body(house);
         } else {
             return ResponseEntity.ok().body(new MessageResponse("Error: Properties not found for this seller!"));
