@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface PropertyInterestedRepository extends JpaRepository<PropertyInterested, Long> {
 
     Optional<PropertyInterested> findByHouseIdAndUserIdAndBuyerId(Long houseId, Long userId, Long buyerId);
+
+    Optional<PropertyInterested> findByHouseIdAndBuyerId(Long houseId, Long buyerId);
 }

@@ -109,9 +109,15 @@ public class BuyerController {
 
     private List<BuyerResponse> getUserInfo(List<House> houses) {
         List<BuyerResponse> buyerResponses = new ArrayList<>();
+        Long id = 0L;
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            id = ((UserDetailsImpl) (principal)).getId();
+        }
         for (House house : houses) {
             BuyerResponse buyerResponse = new BuyerResponse();
             buyerResponse.setHouse(house);
+            PropertyInterested propertyInterested = propertyInterestedRepository.findByHouseIdAndBuyerId(house.getHouseId(), id).orElse(null);
             Long userId = house.getSellerId();
             User user = userRepository.findUserWithRolesById(userId).orElse(null);
             assert user != null;
@@ -127,6 +133,11 @@ public class BuyerController {
                     .collect(Collectors.toList());
             UserInfoResponse userInfoResponse = new UserInfoResponse(user.getUsername(), user.getEmail(), user.getPhoneNumber(), roles);
             buyerResponse.setUserInfoResponse(userInfoResponse);
+            if (ObjectUtils.isEmpty(propertyInterested)) {
+                buyerResponse.setInterested(false);
+            } else {
+                buyerResponse.setInterested(propertyInterested.isInterested());
+            }
             buyerResponses.add(buyerResponse);
         }
         return buyerResponses;

@@ -1,11 +1,10 @@
 package com.property.management.payload.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.property.management.models.House;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BuyerResponse {
     private House house;
+    private Boolean interested;
     private UserInfoResponse userInfoResponse;
 
     public UserInfoResponse getUserInfoResponse() {
@@ -22,5 +21,13 @@ public class BuyerResponse {
 
     public void setHouse(House house) {
         this.house = house;
+    }
+
+    public Boolean getInterested() {
+        return interested;
+    }
+
+    public void setInterested(Boolean interested) {
+        this.interested = interested;
     }
 }
