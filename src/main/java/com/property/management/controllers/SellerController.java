@@ -23,7 +23,6 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600, allowCredentials = "true")
 @RestController
 @RequestMapping("/api/seller")
-@PreAuthorize("hasRole('ROLE_SELLER')")
 public class SellerController {
 
     @Autowired
