@@ -69,7 +69,7 @@ public class AuthController {
                 .body(new UserInfoResponse(userDetails.getId(),
                         userDetails.getUsername(),
                         userDetails.getEmail(),
-                        roles, userDetails.getPhoneNumber()));
+                        roles, jwtCookie.toString(), userDetails.getPhoneNumber()));
     }
 
     @PostMapping("/signup")

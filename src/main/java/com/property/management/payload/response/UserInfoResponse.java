@@ -7,13 +7,15 @@ public class UserInfoResponse {
     private String username;
     private String email;
     private List<String> roles;
+    private String token;
     private String phoneNumber;
 
-    public UserInfoResponse(Long id, String username, String email, List<String> roles, String phoneNumber) {
+    public UserInfoResponse(Long id, String username, String email, List<String> roles, String token, String phoneNumber) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.roles = roles;
+        this.token = token;
         this.phoneNumber = phoneNumber;
     }
 
@@ -43,6 +45,14 @@ public class UserInfoResponse {
 
     public List<String> getRoles() {
         return roles;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public String getPhoneNumber() {
