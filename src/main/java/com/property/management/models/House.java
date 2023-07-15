@@ -23,6 +23,8 @@ public class House {
     private String type;
     @Column(name = "seller_id")
     private Long sellerId;
+    @Column(name = "street_no")
+    private String streetNo;
 
     public Long getHouseId() {
         return houseId;
@@ -86,5 +88,13 @@ public class House {
 
     public void setSellerId(Long sellerId) {
         this.sellerId = sellerId;
+    }
+
+    public String getStreetNo() {
+        return streetNo;
+    }
+
+    public void setStreetNo(String streetNo) {
+        this.streetNo = streetNo;
     }
 }

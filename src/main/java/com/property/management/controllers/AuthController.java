@@ -1,10 +1,5 @@
 package com.property.management.controllers;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.property.management.models.ERole;
 import com.property.management.models.Role;
 import com.property.management.models.User;
@@ -12,10 +7,11 @@ import com.property.management.payload.request.LoginRequest;
 import com.property.management.payload.request.SignupRequest;
 import com.property.management.payload.response.MessageResponse;
 import com.property.management.payload.response.UserInfoResponse;
+import com.property.management.repository.RoleRepository;
+import com.property.management.repository.UserRepository;
 import com.property.management.security.jwt.JwtUtils;
 import com.property.management.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -25,14 +21,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.property.management.repository.RoleRepository;
-import com.property.management.repository.UserRepository;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 //for Angular Client (withCredentials)
 //@CrossOrigin(origins = "http://localhost:8081", maxAge = 3600, allowCredentials="true")
@@ -75,7 +69,7 @@ public class AuthController {
                 .body(new UserInfoResponse(userDetails.getId(),
                         userDetails.getUsername(),
                         userDetails.getEmail(),
-                        roles, jwtCookie.toString()));
+                        roles, userDetails.getPhoneNumber()));
     }
 
     @PostMapping("/signup")

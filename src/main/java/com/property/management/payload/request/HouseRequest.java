@@ -6,6 +6,7 @@ public class HouseRequest {
     private String price;
     private String noOfBedRooms;
     private String specifications;
+    private String streetNo;
     private String type;
 
     public String getCity() {
@@ -54,5 +55,13 @@ public class HouseRequest {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getStreetNo() {
+        return streetNo;
+    }
+
+    public void setStreetNo(String streetNo) {
+        this.streetNo = streetNo;
     }
 }
