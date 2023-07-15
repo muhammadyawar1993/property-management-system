@@ -1,16 +1,21 @@
 package com.property.management.controllers;
 
-import com.property.management.models.ERole;
-import com.property.management.models.House;
-import com.property.management.models.Role;
-import com.property.management.models.User;
+import com.property.management.mapper.PropertyInterestedMapper;
+import com.property.management.models.*;
+import com.property.management.payload.request.PropertyInterestedRequest;
 import com.property.management.payload.response.BuyerResponse;
+import com.property.management.payload.response.MessageResponse;
 import com.property.management.payload.response.UserInfoResponse;
 import com.property.management.repository.HouseRepository;
+import com.property.management.repository.PropertyInterestedRepository;
 import com.property.management.repository.UserRepository;
+import com.property.management.security.services.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +34,42 @@ public class BuyerController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PropertyInterestedRepository propertyInterestedRepository;
+
+    @Autowired
+    private PropertyInterestedMapper propertyInterestedMapper;
+
+    @PostMapping("/show-interest")
+    public ResponseEntity<?> saveOrUpdateInterest(@RequestBody PropertyInterestedRequest propertyInterestedRequest) {
+        Long id = 0L;
+        if (ObjectUtils.isEmpty(propertyInterestedRequest)) {
+            return ResponseEntity.ok().body(new MessageResponse("Error: Request Body is Empty"));
+        }
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            id = ((UserDetailsImpl) (principal)).getId();
+        } else {
+            return ResponseEntity.ok().body(new MessageResponse("Error: User is not Logged In!"));
+        }
+        House house = houseRepository.findById(propertyInterestedRequest.getHouseId()).orElse(null);
+        if (ObjectUtils.isEmpty(house)) {
+            return ResponseEntity.ok().body(new MessageResponse("Error: Invalid Property not found"));
+        } else {
+            PropertyInterested propertyInterested = propertyInterestedRepository.findByHouseIdAndUserIdAndBuyerId(propertyInterestedRequest.getHouseId(), propertyInterestedRequest.getUserId(), id).orElse(null);
+            if (ObjectUtils.isEmpty(propertyInterested)) {
+                PropertyInterested property = propertyInterestedMapper.requestToModel(propertyInterestedRequest);
+                property = propertyInterestedMapper.setBuyerId(property, id);
+                PropertyInterested propertySaved = propertyInterestedRepository.save(property);
+                return ResponseEntity.ok(propertySaved);
+            } else {
+                propertyInterestedMapper.updatePropertyFromDTO(propertyInterested, propertyInterestedRequest);
+                PropertyInterested propertySaved = propertyInterestedRepository.save(propertyInterested);
+                return ResponseEntity.ok(propertySaved);
+            }
+        }
+    }
 
     @GetMapping("/filter")
     public ResponseEntity<?> filterProperties(
@@ -90,4 +131,6 @@ public class BuyerController {
         }
         return buyerResponses;
     }
+
+
 }
