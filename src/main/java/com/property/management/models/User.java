@@ -32,6 +32,10 @@ public class User {
   @Size(max = 120)
   private String password;
 
+  @NotBlank
+  @Size(max = 120)
+  private String phoneNumber;
+
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(name = "user_roles", 
              joinColumns = @JoinColumn(name = "user_id"),
@@ -45,6 +49,13 @@ public class User {
     this.username = username;
     this.email = email;
     this.password = password;
+  }
+
+  public User(String username, String email, String password, String phoneNumber) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.phoneNumber = phoneNumber;
   }
 
   public Long getId() {
@@ -85,5 +96,13 @@ public class User {
 
   public void setRoles(Set<Role> roles) {
     this.roles = roles;
+  }
+
+  public String getPhoneNumber() {
+    return phoneNumber;
+  }
+
+  public void setPhoneNumber(String phoneNumber) {
+    this.phoneNumber = phoneNumber;
   }
 }
