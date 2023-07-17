@@ -1,10 +1,14 @@
 package com.property.management.controllers;
 
 import com.property.management.mapper.SellerMapper;
-import com.property.management.models.House;
+import com.property.management.models.*;
 import com.property.management.payload.request.HouseRequest;
 import com.property.management.payload.response.MessageResponse;
+import com.property.management.payload.response.SellerResponse;
+import com.property.management.payload.response.UserInfoResponse;
 import com.property.management.repository.HouseRepository;
+import com.property.management.repository.PropertyInterestedRepository;
+import com.property.management.repository.UserRepository;
 import com.property.management.security.services.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +20,11 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600, allowCredentials = "true")
 @RestController
@@ -27,6 +34,12 @@ public class SellerController {
 
     @Autowired
     private HouseRepository houseRepository;
+
+    @Autowired
+    private PropertyInterestedRepository propertyInterestedRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     SellerMapper sellerMapper;
@@ -148,23 +161,75 @@ public class SellerController {
         }
 
         List<House> houses;
+        List<SellerResponse> sellerResponse;
+
         if (StringUtils.hasLength(type) && StringUtils.hasLength(minPrice) && StringUtils.hasLength(maxPrice)) {
             houses = houseRepository.findByPriceBetweenAndTypeAndSellerId(minPrice, maxPrice, type, loggedInId);
+            sellerResponse = getUserInfo(houses);
         } else if (StringUtils.hasLength((type)) && StringUtils.hasLength(minPrice)) {
             houses = houseRepository.findByTypeAndMinPriceAndSellerId(type, minPrice, loggedInId);
+            sellerResponse = getUserInfo(houses);
         } else if (StringUtils.hasLength((type)) && StringUtils.hasLength(maxPrice)) {
             houses = houseRepository.findByTypeAndMaxPriceAndSellerId(type, maxPrice, loggedInId);
+            sellerResponse = getUserInfo(houses);
         } else if (StringUtils.hasLength((type))) {
             houses = houseRepository.findByTypeAndSellerId(type, loggedInId);
+            sellerResponse = getUserInfo(houses);
         } else if (StringUtils.hasLength((minPrice)) && StringUtils.hasLength(maxPrice)) {
             houses = houseRepository.findByPriceBetweenAndSellerId(minPrice, maxPrice, loggedInId);
+            sellerResponse = getUserInfo(houses);
         } else if (StringUtils.hasLength(minPrice)) {
             houses = houseRepository.findByMinPriceAndSellerId(minPrice, loggedInId);
+            sellerResponse = getUserInfo(houses);
         } else if (StringUtils.hasLength(maxPrice)) {
             houses = houseRepository.findByMaxPriceAndSellerId(maxPrice, loggedInId);
+            sellerResponse = getUserInfo(houses);
         } else {
             houses = houseRepository.findBySellerId(loggedInId);
+            sellerResponse = getUserInfo(houses);
         }
-        return ResponseEntity.ok().body(houses);
+        return ResponseEntity.ok().body(sellerResponse);
+    }
+
+    private List<SellerResponse> getUserInfo(List<House> houses) {
+        List<SellerResponse> sellerResponses = new ArrayList<>();
+        Long id = 0L;
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserDetails) {
+            id = ((UserDetailsImpl) (principal)).getId();
+        }
+        for (House house : houses) {
+            SellerResponse sellerResponse = new SellerResponse();
+            List<UserInfoResponse> userInfoResponses = new ArrayList<>();
+            sellerResponse.setHouse(house);
+            List<PropertyInterested> propertyInterested = propertyInterestedRepository.findByHouseIdAndUserId(house.getHouseId(), id);
+            if (propertyInterested != null) {
+                for (PropertyInterested propertyInterested1 : propertyInterested) {
+                    User user = userRepository.findUserWithRolesById(propertyInterested1.getBuyerId()).orElse(null);
+                    if (user != null) {
+                        Iterator<Role> iterator = user.getRoles().iterator();
+                        List<ERole> enumRoles = new ArrayList<>();
+                        while (iterator.hasNext()) {
+                            Role element = iterator.next();
+                            ERole roleName = element.getName();
+                            enumRoles.add(roleName);
+                        }
+                        List<String> roles = enumRoles.stream()
+                                .map(Enum::toString)
+                                .collect(Collectors.toList());
+                        UserInfoResponse userInfoResponse = new UserInfoResponse(user.getUsername(), user.getEmail(), user.getPhoneNumber(), roles);
+                        userInfoResponses.add(userInfoResponse);
+                        if (ObjectUtils.isEmpty(propertyInterested1)) {
+                            sellerResponse.setInterested(false);
+                        } else {
+                            sellerResponse.setInterested(propertyInterested1.isInterested());
+                        }
+                    }
+                }
+                sellerResponse.setUserInfoResponse(userInfoResponses);
+            }
+            sellerResponses.add(sellerResponse);
+        }
+        return sellerResponses;
     }
 }
