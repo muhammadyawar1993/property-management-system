@@ -29,6 +29,14 @@ public class UserInfoResponse {
         this.phoneNumber = phoneNumber;
     }
 
+    public UserInfoResponse(Long id, String username, String email, List<String> roles, String phoneNumber) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.roles = roles;
+        this.phoneNumber = phoneNumber;
+    }
+
     public Long getId() {
         return id;
     }

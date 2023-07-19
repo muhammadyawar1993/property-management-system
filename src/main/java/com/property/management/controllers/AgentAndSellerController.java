@@ -3,6 +3,7 @@ package com.property.management.controllers;
 import com.property.management.mapper.SellerMapper;
 import com.property.management.models.*;
 import com.property.management.payload.request.HouseRequest;
+import com.property.management.payload.response.CountResponse;
 import com.property.management.payload.response.MessageResponse;
 import com.property.management.payload.response.SellerResponse;
 import com.property.management.payload.response.UserInfoResponse;
@@ -14,6 +15,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.ObjectUtils;
@@ -30,7 +32,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/seller")
 @PreAuthorize("hasRole('ROLE_SELLER') or hasRole('ROLE_AGENT')")
-public class SellerController {
+public class AgentAndSellerController {
 
     @Autowired
     private HouseRepository houseRepository;
@@ -189,6 +191,41 @@ public class SellerController {
             sellerResponse = getUserInfo(houses);
         }
         return ResponseEntity.ok().body(sellerResponse);
+    }
+
+    @GetMapping("/dashboard/count")
+    public ResponseEntity<?> getCountByUserId() {
+        Long userId = 0L;
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CountResponse response = new CountResponse();
+        if (principal instanceof UserDetails) {
+            userId = ((UserDetailsImpl) (principal)).getId();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(item -> item.getAuthority())
+                    .collect(Collectors.toList());
+
+            UserInfoResponse userInfoResponse = new UserInfoResponse(userDetails.getId(),
+                    userDetails.getUsername(),
+                    userDetails.getEmail(),
+                    roles, userDetails.getPhoneNumber());
+            response.setUserInfoResponse(userInfoResponse);
+        } else {
+            return ResponseEntity.ok().body(new MessageResponse("Error: User is not Logged In!"));
+        }
+
+        // Count houses based on logged in user
+        long houseCount = houseRepository.countHouseBySellerId(userId);
+
+        // Count interested properties based on user_id and interested = true
+        long interestedCount = propertyInterestedRepository.countByUserIdAndInterestedTrue(userId);
+
+        // Create response object
+        response.setHouseCount(houseCount);
+        response.setInterestedCount(interestedCount);
+
+        return ResponseEntity.ok(response);
     }
 
     private List<SellerResponse> getUserInfo(List<House> houses) {

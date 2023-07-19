@@ -16,4 +16,8 @@ public interface PropertyInterestedRepository extends JpaRepository<PropertyInte
 
     List<PropertyInterested> findByHouseIdAndUserId(Long houseId, Long userId);
 
+    long countByUserIdAndInterestedTrue(Long userId);
+
+    long countByBuyerIdAndInterestedTrue(Long buyerId);
+
 }

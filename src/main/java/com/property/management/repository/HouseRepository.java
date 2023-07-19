@@ -62,4 +62,6 @@ public interface HouseRepository extends JpaRepository<House, Long> {
     @Query("SELECT p FROM House p WHERE p.houseId = :id")
     Optional<House> findById(@Param("id") Long id);
 
+
+    long countHouseBySellerId(Long sellerId);
 }
